@@ -4,7 +4,7 @@
 
 No login. No wallet. No API key. Just open and see live gas prices and USD costs across 8 chains.
 
-🌐 Live demo: https://weblog-bowl-nebraska-hindu.trycloudflare.com
+> Self-host in 30 seconds — see [Run locally](#run-locally) below.
 
 ![GasLens proof](docs/proof.png)
 
