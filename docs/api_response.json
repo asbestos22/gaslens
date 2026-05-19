@@ -1,0 +1,189 @@
+{
+    "ts": 1779153636,
+    "tx_types": {
+        "transfer": {
+            "label": "Native transfer",
+            "gas": 21000,
+            "icon": "\u2197"
+        },
+        "erc20": {
+            "label": "ERC-20 transfer",
+            "gas": 65000,
+            "icon": "\u2261"
+        },
+        "swap": {
+            "label": "Token swap",
+            "gas": 200000,
+            "icon": "\u21c4"
+        },
+        "nft_mint": {
+            "label": "NFT mint",
+            "gas": 150000,
+            "icon": "\u2605"
+        },
+        "nft_xfer": {
+            "label": "NFT transfer",
+            "gas": 85000,
+            "icon": "\u2192"
+        },
+        "approve": {
+            "label": "Token approve",
+            "gas": 46000,
+            "icon": "\u2713"
+        }
+    },
+    "chains": [
+        {
+            "id": "avalanche",
+            "name": "Avalanche",
+            "native": "AVAX",
+            "native_usd": 9.26,
+            "color": "#e84142",
+            "explorer": "https://snowtrace.io",
+            "gas_gwei": 0.0097,
+            "base_fee_gwei": 0.0096,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 2e-06,
+                "erc20": 6e-06,
+                "swap": 1.8e-05,
+                "nft_mint": 1.4e-05,
+                "nft_xfer": 8e-06,
+                "approve": 4e-06
+            }
+        },
+        {
+            "id": "optimism",
+            "name": "Optimism",
+            "native": "ETH",
+            "native_usd": 2130.42,
+            "color": "#ff0420",
+            "explorer": "https://optimistic.etherscan.io",
+            "gas_gwei": 0.001,
+            "base_fee_gwei": 0.0,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 4.5e-05,
+                "erc20": 0.000139,
+                "swap": 0.000426,
+                "nft_mint": 0.00032,
+                "nft_xfer": 0.000181,
+                "approve": 9.8e-05
+            }
+        },
+        {
+            "id": "base",
+            "name": "Base",
+            "native": "ETH",
+            "native_usd": 2130.42,
+            "color": "#0052ff",
+            "explorer": "https://basescan.org",
+            "gas_gwei": 0.006,
+            "base_fee_gwei": 0.005,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 0.000268,
+                "erc20": 0.000831,
+                "swap": 0.002557,
+                "nft_mint": 0.001917,
+                "nft_xfer": 0.001087,
+                "approve": 0.000588
+            }
+        },
+        {
+            "id": "polygon",
+            "name": "Polygon",
+            "native": "POL",
+            "native_usd": 0.0909,
+            "color": "#8247e5",
+            "explorer": "https://polygonscan.com",
+            "gas_gwei": 279.3604,
+            "base_fee_gwei": 0.0,
+            "priority_gwei": 0.0,
+            "cost_usd": {
+                "transfer": 0.000533,
+                "erc20": 0.001651,
+                "swap": 0.005079,
+                "nft_mint": 0.003809,
+                "nft_xfer": 0.002158,
+                "approve": 0.001168
+            }
+        },
+        {
+            "id": "arbitrum",
+            "name": "Arbitrum",
+            "native": "ETH",
+            "native_usd": 2130.42,
+            "color": "#28a0f0",
+            "explorer": "https://arbiscan.io",
+            "gas_gwei": 0.02,
+            "base_fee_gwei": 0.02,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 0.000895,
+                "erc20": 0.00277,
+                "swap": 0.008523,
+                "nft_mint": 0.006392,
+                "nft_xfer": 0.003622,
+                "approve": 0.00196
+            }
+        },
+        {
+            "id": "bsc",
+            "name": "BNB Chain",
+            "native": "BNB",
+            "native_usd": 644.45,
+            "color": "#f0b90b",
+            "explorer": "https://bscscan.com",
+            "gas_gwei": 0.1,
+            "base_fee_gwei": 0.0,
+            "priority_gwei": 0.0,
+            "cost_usd": {
+                "transfer": 0.001353,
+                "erc20": 0.004189,
+                "swap": 0.012889,
+                "nft_mint": 0.009667,
+                "nft_xfer": 0.005478,
+                "approve": 0.002964
+            }
+        },
+        {
+            "id": "ethereum",
+            "name": "Ethereum",
+            "native": "ETH",
+            "native_usd": 2130.42,
+            "color": "#627eea",
+            "explorer": "https://etherscan.io",
+            "gas_gwei": 0.0983,
+            "base_fee_gwei": 0.0982,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 0.004396,
+                "erc20": 0.013608,
+                "swap": 0.04187,
+                "nft_mint": 0.031403,
+                "nft_xfer": 0.017795,
+                "approve": 0.00963
+            }
+        },
+        {
+            "id": "linea",
+            "name": "Linea",
+            "native": "ETH",
+            "native_usd": 2130.42,
+            "color": "#000000",
+            "explorer": "https://lineascan.build",
+            "gas_gwei": 0.1288,
+            "base_fee_gwei": 0.0,
+            "priority_gwei": 1.0,
+            "cost_usd": {
+                "transfer": 0.00576,
+                "erc20": 0.017829,
+                "swap": 0.054858,
+                "nft_mint": 0.041144,
+                "nft_xfer": 0.023315,
+                "approve": 0.012617
+            }
+        }
+    ]
+}

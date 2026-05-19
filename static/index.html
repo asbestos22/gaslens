@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GasLens — Multi-chain gas tracker</title>
+<meta name="description" content="Real-time EVM gas prices across 8 chains. USD cost for transfers, swaps, NFT mints. No login.">
+<meta property="og:title" content="GasLens — Multi-chain gas tracker">
+<meta property="og:description" content="Real-time gas prices + USD cost across 8 EVM chains.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0b0d12;
+    --panel: #131720;
+    --panel-hi: #1a1f2b;
+    --border: #232936;
+    --text: #d4d8e1;
+    --text-dim: #6c7585;
+    --accent: #3ddc97;
+    --accent2: #4ea8de;
+    --warn: #ffb86c;
+    --danger: #ff5d6c;
+    --gold: #f9c74f;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    font-size: 32px;
+    line-height: 1;
+  }
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .brand-text h1 span { color: var(--accent2); }
+  .brand-text .tag { color: var(--text-dim); font-size: 12px; }
+
+  .header-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .last-update { color: var(--text-dim); font-size: 11px; }
+  .pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  button {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+
+  .hero {
+    margin: 24px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #131720, #0f131a);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+  }
+  .hero-stat .label {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .hero-stat .value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-stat .sub {
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .cheap { color: var(--accent); }
+  .mid { color: var(--gold); }
+  .pricey { color: var(--warn); }
+  .very-pricey { color: var(--danger); }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .controls-row .label {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+  .tx-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pill:hover { border-color: var(--accent2); }
+  .pill.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .pill .icon { font-size: 14px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--chain-color, var(--border));
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .card.error { opacity: 0.5; }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .chain-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .chain-rank {
+    background: var(--panel-hi);
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .chain-rank.top { background: var(--accent); color: var(--bg); }
+  .gas-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .gas-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .gas-unit {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .cost-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cost-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .native-row {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .err-msg {
+    color: var(--danger);
+    font-size: 12px;
+    padding: 8px 0;
+  }
+
+  .loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .loader::before {
+    content: '';
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer {
+    margin-top: 32px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  footer a { color: var(--accent2); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 16px; gap: 16px; }
+    .hero-stat .value { font-size: 22px; }
+    .gas-value { font-size: 24px; }
+    .cost-value { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-icon">⛽</div>
+        <div class="brand-text">
+          <h1>Gas<span>Lens</span></h1>
+          <div class="tag">Real-time EVM gas prices · 8 chains · no login</div>
+        </div>
+      </div>
+      <div class="header-controls">
+        <span class="last-update" id="last-update"><span class="pulse"></span>connecting...</span>
+        <button id="refresh">↻ Refresh</button>
+      </div>
+    </header>
+
+    <div class="hero" id="hero">
+      <div class="hero-stat">
+        <div class="label">Cheapest swap</div>
+        <div class="value" id="cheap-name">—</div>
+        <div class="sub" id="cheap-cost"></div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Priciest swap</div>
+        <div class="value" id="pricey-name">—</div>
+        <div class="sub" id="pricey-cost"></div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">ETH price</div>
+        <div class="value" id="eth-price">—</div>
+        <div class="sub">across 5 ETH chains</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Chains tracked</div>
+        <div class="value" id="chain-count">—</div>
+        <div class="sub">parallel polled · 5s cache</div>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <span class="label">Tx type:</span>
+      <div class="tx-pills" id="tx-pills"></div>
+    </div>
+
+    <div id="content">
+      <div class="loader">Polling 8 RPCs...</div>
+    </div>
+
+    <footer>
+      <strong style="color: var(--text);">GasLens</strong> · open source · zero tracking<br>
+      Built on top of public RPCs (publicnode, base.org) + CoinGecko free API<br>
+      Gas units are typical estimates · actual costs depend on contract complexity
+    </footer>
+  </div>
+
+<script>
+let activeTx = 'swap';
+let lastData = null;
+
+const REFRESH_MS = 12000;
+let timer = null;
+
+async function load() {
+  document.getElementById('refresh').disabled = true;
+  try {
+    const r = await fetch('/api/gas');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    lastData = data;
+    render(data);
+    updateBadge(true);
+  } catch (e) {
+    updateBadge(false, e.message);
+  } finally {
+    document.getElementById('refresh').disabled = false;
+  }
+}
+
+function updateBadge(ok, err) {
+  const el = document.getElementById('last-update');
+  if (ok) {
+    const t = new Date().toLocaleTimeString();
+    el.innerHTML = `<span class="pulse"></span>updated ${t}`;
+  } else {
+    el.textContent = `error: ${err || 'unknown'}`;
+  }
+}
+
+function fmtUsd(n) {
+  if (!n && n !== 0) return '—';
+  if (n < 0.0001) return '<$0.0001';
+  if (n < 0.01) return '$' + n.toFixed(5);
+  if (n < 1) return '$' + n.toFixed(3);
+  if (n < 100) return '$' + n.toFixed(2);
+  return '$' + n.toFixed(1);
+}
+function fmtGwei(n) {
+  if (!n) return '—';
+  if (n < 0.001) return n.toExponential(2);
+  if (n < 1) return n.toFixed(4);
+  return n.toFixed(2);
+}
+function costColor(usd) {
+  if (usd < 0.05) return 'cheap';
+  if (usd < 0.50) return 'mid';
+  if (usd < 5) return 'pricey';
+  return 'very-pricey';
+}
+
+function renderTxPills() {
+  if (!lastData) return;
+  const c = document.getElementById('tx-pills');
+  c.innerHTML = Object.entries(lastData.tx_types).map(([id, info]) => `
+    <span class="pill ${id === activeTx ? 'active' : ''}" data-tx="${id}">
+      <span class="icon">${info.icon}</span>${info.label}
+    </span>
+  `).join('');
+  c.querySelectorAll('.pill').forEach(el => {
+    el.onclick = () => {
+      activeTx = el.dataset.tx;
+      renderTxPills();
+      renderCards();
+    };
+  });
+}
+
+function render(data) {
+  // Hero stats
+  const valid = data.chains.filter(c => !c.error);
+  const sorted = [...valid].sort((a,b) => (a.cost_usd[activeTx] ?? 999) - (b.cost_usd[activeTx] ?? 999));
+  const cheapest = sorted[0];
+  const priciest = sorted[sorted.length - 1];
+
+  if (cheapest) {
+    document.getElementById('cheap-name').innerHTML =
+      `<span style="color:${cheapest.color}">${cheapest.name}</span>`;
+    document.getElementById('cheap-cost').textContent =
+      `${fmtUsd(cheapest.cost_usd[activeTx])} · ${fmtGwei(cheapest.gas_gwei)} gwei`;
+  }
+  if (priciest && priciest !== cheapest) {
+    document.getElementById('pricey-name').innerHTML =
+      `<span style="color:${priciest.color}">${priciest.name}</span>`;
+    document.getElementById('pricey-cost').textContent =
+      `${fmtUsd(priciest.cost_usd[activeTx])} · ${fmtGwei(priciest.gas_gwei)} gwei`;
+  }
+  const ethC = valid.find(c => c.native === 'ETH');
+  document.getElementById('eth-price').textContent = ethC ? fmtUsd(ethC.native_usd) : '—';
+  document.getElementById('chain-count').textContent = `${valid.length}/${data.chains.length}`;
+
+  renderTxPills();
+  renderCards();
+}
+
+function renderCards() {
+  if (!lastData) return;
+  const sorted = [...lastData.chains].sort((a,b) => {
+    if (a.error) return 1;
+    if (b.error) return -1;
+    return (a.cost_usd[activeTx] ?? 999) - (b.cost_usd[activeTx] ?? 999);
+  });
+
+  const html = sorted.map((c, i) => {
+    if (c.error) {
+      return `
+        <div class="card error" style="--chain-color: ${c.color}">
+          <div class="card-head">
+            <div class="chain-name">${c.name}</div>
+            <div class="chain-rank">N/A</div>
+          </div>
+          <div class="err-msg">⚠ ${c.error}</div>
+        </div>`;
+    }
+    const cost = c.cost_usd[activeTx];
+    const tx = lastData.tx_types[activeTx];
+    return `
+      <div class="card" style="--chain-color: ${c.color}">
+        <div class="card-head">
+          <div class="chain-name">${c.name}</div>
+          <div class="chain-rank ${i === 0 ? 'top' : ''}">${i === 0 ? '★ #1' : '#' + (i + 1)}</div>
+        </div>
+        <div class="gas-row">
+          <span class="gas-value">${fmtGwei(c.gas_gwei)}</span>
+          <span class="gas-unit">gwei</span>
+        </div>
+        <div class="cost-row">
+          <div>
+            <div class="cost-label">${tx.icon} ${tx.label}</div>
+            <div style="color: var(--text-dim); font-size: 11px;">${tx.gas.toLocaleString()} gas</div>
+          </div>
+          <div class="cost-value ${costColor(cost)}">${fmtUsd(cost)}</div>
+        </div>
+        <div class="native-row">
+          <span>${c.native} = ${fmtUsd(c.native_usd)}</span>
+          <a href="${c.explorer}" target="_blank" rel="noopener" style="color: var(--text-dim); text-decoration: none;">explorer ↗</a>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('content').innerHTML = `<div class="grid">${html}</div>`;
+}
+
+document.getElementById('refresh').onclick = () => { load(); };
+
+load();
+timer = setInterval(load, REFRESH_MS);
+</script>
+</body>
+</html>
